@@ -1,13 +1,35 @@
-# kafka-spark-streaming
-Este proyecto implementa un sistema de streaming usando Apache Kafka y PySpark Structured Streaming, simulando el flujo de datos de viajes urbanos en Colombia.
-# Kafka-Spark Streaming
+# Proyecto Kafka + Spark Streaming: Simulación de Viajes Urbanos
 
-Este proyecto demuestra un flujo de datos en **tiempo real** utilizando **Kafka** como sistema de mensajería y **Spark Streaming** para procesar los datos.  
+## Descripción del proyecto
+Este proyecto simula un flujo de datos en tiempo real de viajes urbanos en Colombia. 
+Se utiliza **Kafka** para enviar los datos en tiempo real y **Spark Streaming** para procesarlos y mostrar análisis en consola.
 
-Se utiliza un **dataset propio** simulado que genera información de viajes en ciudades de Colombia, con el número de pasajeros y el tipo de transporte.
+El dataset es **propio y generado aleatoriamente**. Cada registro contiene:
+- `ciudad`: Ciudad donde ocurre el viaje (Bogotá, Medellín, Cali, Barranquilla)
+- `tipo`: Tipo de transporte (Bus, Taxi, Buseta)
+- `pasajeros`: Número de pasajeros
+- `hora`: Fecha y hora del viaje
+
+### Objetivos
+- Generar datos de viajes en tiempo real.
+- Enviar los datos a un topic de Kafka (`viajes`).
+- Procesar los datos con Spark Streaming y mostrar:
+  - Conteo de viajes por ciudad.
+  - Promedio de pasajeros por tipo de transporte.
 
 ---
 
+## Requisitos
+
+- Python 3.9 o superior
+- Kafka y Zookeeper corriendo en `localhost:9092` y `localhost:2181`
+- PySpark
+- kafka-python
+
+Instalar dependencias con:
+
+```bash
+pip install -r requirements.txt
 ## 1. Dataset propio
 
 El dataset no es real, sino generado aleatoriamente por el productor Kafka. Cada registro tiene la siguiente estructura:
