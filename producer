@@ -1,0 +1,40 @@
+# productor/kafka_producer.py
+from kafka import KafkaProducer
+import json
+import random
+import time
+
+# ----------------------------
+# Crear productor Kafka
+# ----------------------------
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9092',
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # Convertir diccionario a JSON y luego a bytes
+)
+
+# ----------------------------
+# Listas para simular datos
+# ----------------------------
+ciudades = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla']
+tipos = ['Bus', 'Taxi', 'Buseta']
+
+# ----------------------------
+# Bucle infinito para enviar datos en tiempo real
+# ----------------------------
+while True:
+    # Crear registro de viaje aleatorio
+    viaje = {
+        'ciudad': random.choice(ciudades),
+        'tipo': random.choice(tipos),
+        'pasajeros': random.randint(1, 50),
+        'hora': time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    # Enviar registro al topic 'viajes'
+    producer.send('viajes', viaje)
+
+    # Mostrar en consola el mensaje enviado
+    print(f'Enviado: {viaje}')
+
+    # Pausa de 1 segundo antes del siguiente mensaje
+    time.sleep(1)
