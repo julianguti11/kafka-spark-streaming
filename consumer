@@ -1,0 +1,70 @@
+# spark-submit \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.6 \
+  spark1_streaming_consumer.py
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import from_json, col
+from pyspark.sql.types import StructType, StringType, IntegerType
+
+# ----------------------------
+# Crear SparkSession
+# ----------------------------
+spark = SparkSession.builder.appName("KafkaSparkStreaming").getOrCreate()
+
+# Silenciar logs de Spark para solo mostrar errores
+spark.sparkContext.setLogLevel("ERROR")
+
+# ----------------------------
+# Esquema de los datos JSON
+# ----------------------------
+schema = StructType()\
+    .add("ciudad", StringType())\
+    .add("tipo", StringType())\
+    .add("pasajeros", IntegerType())\
+    .add("hora", StringType())
+
+# ----------------------------
+# Leer datos del topic 'viajes'
+# ----------------------------
+df = spark.readStream.format("kafka")\
+    .option("kafka.bootstrap.servers", "localhost:9092")\
+    .option("subscribe", "viajes")\
+    .option("startingOffsets", "earliest")\
+    .load()
+
+# ----------------------------
+# Parsear JSON y obtener columnas
+# ----------------------------
+df_parsed = df.selectExpr("CAST(value AS STRING)")\
+    .select(from_json(col("value"), schema).alias("data"))\
+    .select("data.*")
+
+# ----------------------------
+# Contar eventos por ciudad
+# ----------------------------
+df_count_ciudad = df_parsed.groupBy("ciudad").count()
+
+# ----------------------------
+# Promedio de pasajeros por tipo de transporte
+# ----------------------------
+df_avg_pasajeros = df_parsed.groupBy("tipo").avg("pasajeros")
+
+# ----------------------------
+# Mostrar resultados en consola
+# ----------------------------
+query_count = df_count_ciudad.writeStream\
+    .outputMode("complete")\
+    .format("console")\
+    .option("truncate", False)\
+    .start()
+
+query_avg = df_avg_pasajeros.writeStream\
+    .outputMode("complete")\
+    .format("console")\
+    .option("truncate", False)\
+    .start()
+
+# ----------------------------
+# Mantener el streaming activo
+# ----------------------------
+query_count.awaitTermination()
+query_avg.awaitTermination()
